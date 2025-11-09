@@ -79,10 +79,7 @@ def cli_profile(args):
     # ntmp.check_for_databases(args)
 
     pp.process_args(args)
-    if args.external_resistance_db:
-        args.resistance_db = args.external_resistance_db
-    if args.external_species_db:
-        args.species_db = args.external_species_db
+
 
 
     ### Create folders for results if they don't exist ###
