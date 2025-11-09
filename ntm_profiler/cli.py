@@ -333,9 +333,7 @@ def cli_entrypoint():
     group.add_argument('--vcf','-v',help='VCF file')
     input.add_argument('--platform','-m',choices=["illumina","nanopore"],default="illumina",help='NGS Platform used to generate data')
     input.add_argument('--resistance_db',help='Mutation panel name')
-    input.add_argument('--external_resistance_db',type=str,help='Path to db files prefix (overrides "--db" parameter)')
     input.add_argument('--species_db',default='ntmdb',help='Mutation panel name')
-    input.add_argument('--external_species_db',type=str,help='Path to db files prefix (overrides "--db" parameter)')
 
     output=parser_sub.add_argument_group("Output options")
     output.add_argument('--prefix','-p',default="ntmprofiler",help='Sample prefix for all results generated')
