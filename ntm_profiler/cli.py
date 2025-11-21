@@ -156,6 +156,8 @@ def cli_profile(args):
     else:
         qc = pp.run_vcf_qc(args)
 
+    ntmp.add_coverage_to_genes(variants_profile, qc)
+    variants_profile = ntmp.filter_low_coverage_genes(variants_profile,args.data_source)
 
     notes = []
     for rule in rules_applied:

@@ -1,8 +1,9 @@
 import sys
 import pathogenprofiler as pp
 import argparse
-from pathogenprofiler.models import SpeciesPrediction
+from pathogenprofiler.models import SpeciesPrediction, DrGene, SequenceQC
 from typing import List
+import logging
 
 def check_for_databases(args: argparse.Namespace):
     if len(pp.list_db(args.db_dir))<1:
@@ -43,3 +44,20 @@ def merge_sourmash_species(sourmash_hits: SpeciesPrediction) -> None:
         s.relative_abundance = s.abundance/total_abundance*100
     sourmash_hits.taxa = species_objects
 
+def add_coverage_to_genes(genes: list, qc: SequenceQC):
+    for gene in genes:
+        if isinstance(gene,DrGene):
+            for target in qc.target_qc:
+                if (gene.gene_id == target.target) or (gene.gene_name == target.target):
+                    gene.coverage = target.percent_depth_pass
+
+def filter_low_coverage_genes(resistance_determinants: list,input_type: str,cutoff=90) -> list:
+    new_list = []
+    for d in resistance_determinants:
+        if isinstance(d, DrGene):
+            if input_type in ('fasta','bam'):
+                if d.coverage<cutoff:
+                    logging.debug(f"Removing {d.gene_name} coverage ({d.coverage}) is less than cutoff {cutoff}")
+                    continue
+        new_list.append(d)
+    return new_list
