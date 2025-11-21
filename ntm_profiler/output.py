@@ -49,9 +49,6 @@ Notes: {{d['species_notes']}}
 
 {{d['sourmash_species_report']}}
 
-QC Failed species
------------------
-{{d['qc_fail_sourmash_species_report']}}
 
 {% if 'barcode_report' in d %}
 Subspecies report
@@ -79,6 +76,10 @@ Other variants report
 Coverage report
 ---------------------
 {{d['coverage_report']}}
+
+QC Failed species
+-----------------
+{{d['qc_fail_sourmash_species_report']}}
 
 Missing positions report
 ---------------------
