@@ -310,7 +310,6 @@ def collate(args):
 
     if os.path.isfile(args.dist_db_name):
         rows_by_sample = {r['id']:r for r in rows}
-        print(rows_by_sample)
         snp_db = pp.SnpDistDB(args.dist_db_name)
         graph_output = args.outfile+'.snp-dist.json'
         snp_db.write_graph(graph_output, args.distance_cutoff , rows_by_sample)
