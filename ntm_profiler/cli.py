@@ -180,11 +180,31 @@ def cli_profile(args):
     ntmp.write_outputs(args,result)
 
     if args.consensus:
-        pp.consensus.cli_prepare_sample_consensus(
+        consensus_filename = pp.consensus.cli_prepare_sample_consensus(
             sample=args.prefix,
             input_vcf="%s.vcf.gz" % args.files_prefix,
             args=args,
         )
+
+    if args.snp_dist:
+        consensus_vcf_filename = f"{args.prefix}.consensus.vcf"
+        pp.consensus_fasta_to_vcf(
+            consensus_fasta=consensus_filename,
+            ref=args.conf['ref'],
+            outfile=consensus_vcf_filename
+        )
+
+        snp_db = pp.SnpDistDB(args.dist_db_name)
+
+        logging.debug(f"Storing sample {args.prefix} into database {args.dist_db_name}.")
+        snp_db.store(
+            sample_name=args.prefix,
+            vcf_file=consensus_vcf_filename,
+            taxa=args.conf['species'],
+            cutoff=args.snp_dist
+        )
+
+        logging.info(f"Sample {args.prefix} inserted into database {args.dist_db_name}.")
 
     ### Move files to respective directories ###
     result_files = {
@@ -342,6 +362,7 @@ def cli_entrypoint():
     output.add_argument('--add_mutation_metadata',action="store_true",help=argparse.SUPPRESS)
     output.add_argument('--call_whole_genome',action="store_true",help="Call whole genome")
     output.add_argument('--consensus',action="store_true",help="Create consensus sequence")
+    output.add_argument('--dist_db_name',default='ntm-profiler-dists.db',help="Default name for SNP-dist DB")
     
     output.add_argument('--low_dp_mask','--low-dp-mask',help=argparse.SUPPRESS)
     output.add_argument('--save_low_dp_mask','--save-low-dp-mask',action='store_true',help=argparse.SUPPRESS)
@@ -365,6 +386,7 @@ def cli_entrypoint():
     algorithm.add_argument('--kmer_counter',default="kmc", choices=["kmc","dsk"],help="Kmer counting tool to use",type=str)
     algorithm.add_argument('--coverage_tool',default="samtools", choices=["bedtools","samtools"],help="Coverage  tool to use",type=str)
     algorithm.add_argument('--calling_params',type=str,help='Override default parameters for variant calling')
+    algorithm.add_argument('--snp_dist','--snp-dist',type=int,help="Store variant set and get all samples with snp distance less than this cutoff (experimental feature)")
     algorithm.add_argument('--species_only',action="store_true",help="Predict species and quit")
     algorithm.add_argument('--no_species',action="store_false",dest="run_species",help="Skip species prediction")
     algorithm.add_argument('--no_trim',action="store_true",help="Don't trim files using trimmomatic")
@@ -393,6 +415,8 @@ def cli_entrypoint():
     parser_sub.add_argument('--suffix',default=".results.json",type=str,help='Input results files suffix')
     parser_sub.add_argument('--format',default="txt",choices=["txt","csv"],type=str,help='Output file type')
     parser_sub.add_argument('--min_species_relative_abundance',type=float,default=2.0,help='Minimum abundance (percent) for a species to be reported in the collated output')
+    parser_sub.add_argument('--dist_db_name',default='ntm-profiler-dists.db',help="Default name for SNP-dist DB")
+    parser_sub.add_argument('--distance_cutoff',default=10,help="Cutoff for SNP distance graph output (distance<=cutoff)",type=int)
     parser_sub.set_defaults(func=cli_collate)
 
 

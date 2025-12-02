@@ -55,6 +55,7 @@ def filter_low_coverage_genes(resistance_determinants: list,input_type: str,cuto
     new_list = []
     for d in resistance_determinants:
         if isinstance(d, DrGene):
+            logging.debug(f"Checking {d.gene_name} coverage: {d.coverage} against cutoff {cutoff}")
             if input_type in ('fasta','bam'):
                 if d.coverage<cutoff:
                     logging.debug(f"Removing {d.gene_name} coverage ({d.coverage}) is less than cutoff {cutoff}")
