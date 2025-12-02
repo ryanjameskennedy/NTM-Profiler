@@ -49,9 +49,6 @@ Notes: {{d['species_notes']}}
 
 {{d['sourmash_species_report']}}
 
-QC Failed species
------------------
-{{d['qc_fail_sourmash_species_report']}}
 
 {% if 'barcode_report' in d %}
 Subspecies report
@@ -79,6 +76,10 @@ Other variants report
 Coverage report
 ---------------------
 {{d['coverage_report']}}
+
+QC Failed species
+-----------------
+{{d['qc_fail_sourmash_species_report']}}
 
 Missing positions report
 ---------------------
@@ -305,3 +306,10 @@ def collate(args):
         writer.writerows(rows)
 
     variant_db.write_dump(args.outfile + ".variants.csv")
+
+
+    if os.path.isfile(args.dist_db_name):
+        rows_by_sample = {r['id']:r for r in rows}
+        snp_db = pp.SnpDistDB(args.dist_db_name)
+        graph_output = args.outfile+'.snp-dist.json'
+        snp_db.write_graph(graph_output, args.distance_cutoff , rows_by_sample)
