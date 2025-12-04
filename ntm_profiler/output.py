@@ -209,10 +209,11 @@ class VariantDB:
         return list(self.variant2samples.keys())
     def write_dump(self,filename: str) -> None:
         with open(filename,"w") as O:
-            fields = ["sample","gene_name","change","freq","type"]
+            fields = ["sample","pos","gene_id","gene_name","change","freq","type"]
             writer = csv.DictWriter(O,fieldnames=fields)
             writer.writeheader()
             for row in self.variant_rows:
+                print(row)
                 d = {k:row[k] for k in fields}
                 writer.writerow(d)
 
