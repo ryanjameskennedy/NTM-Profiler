@@ -213,7 +213,6 @@ class VariantDB:
             writer = csv.DictWriter(O,fieldnames=fields)
             writer.writeheader()
             for row in self.variant_rows:
-                print(row)
                 d = {k:row[k] for k in fields}
                 writer.writerow(d)
 
