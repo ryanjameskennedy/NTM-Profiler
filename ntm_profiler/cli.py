@@ -12,6 +12,8 @@ import logging
 from rich_argparse import ArgumentDefaultsRichHelpFormatter
 from rich.logging import RichHandler
 from packaging.version import Version
+import tempfile
+from .utils import reformat_variant_csv_file
 
 args = None
 
@@ -262,7 +264,16 @@ def create_resistance_db(args):
         extra_files["barcode"] = args.barcode
     if os.path.isfile("mask.bed"):
         extra_files["bedmask"] = "mask.bed"
-    pp.create_db(args,extra_files=extra_files)
+
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        if args.csv:
+            args.csv = reformat_variant_csv_file(args.csv,f'{tmpdir}.variants.csv')
+        if args.watchlist:
+            args.watchlist = reformat_variant_csv_file(args.watchlist,f'{tmpdir}.watchlist.csv')
+
+
+        pp.create_db(args,extra_files=extra_files)
 
 
 def cli_collate(args):
@@ -302,6 +313,11 @@ def cli_update_db(args):
     for d in dirs:
         logging.debug(f"Moving to {d}")
         os.chdir(d)
+        ignore = json.load(open('variables.json')).get('ntm-profiler-ignore',False)
+        if ignore:
+            logging.info(f'Skipping creation of resistance DB for {d} as it is marked to be ignored')
+            os.chdir('../')
+            continue
         species = json.load(open('variables.json'))['species']
         logging.info(f'\nCreating DB for {species}')
         barcode_arg = "--barcode barcode.bed" if os.path.isfile("barcode.bed") else ""
