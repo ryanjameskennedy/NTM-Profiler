@@ -19,8 +19,8 @@ args = None
 
 __softwarename__ = "ntm-profiler"
 __default_data_dir__ = f'{sys.base_prefix}/share/{__softwarename__}/'
-__compatible_resistance_db_schema__ = Version("1.0.0")
-__compatible_species_db_schema__ = Version("3.0.0")
+__compatible_resistance_db_schema__ = Version("2.0.0")
+__compatible_species_db_schema__ = Version("4.0.0")
 
 def remove_temp_files(args: argparse.Namespace):
     if len(glob.glob(f"{args.files_prefix}*"))>0:
