@@ -12,13 +12,15 @@ import logging
 from rich_argparse import ArgumentDefaultsRichHelpFormatter
 from rich.logging import RichHandler
 from packaging.version import Version
+import tempfile
+from .utils import reformat_variant_csv_file
 
 args = None
 
 __softwarename__ = "ntm-profiler"
 __default_data_dir__ = f'{sys.base_prefix}/share/{__softwarename__}/'
-__compatible_resistance_db_schema__ = Version("1.0.0")
-__compatible_species_db_schema__ = Version("3.0.0")
+__compatible_resistance_db_schema__ = Version("2.0.0")
+__compatible_species_db_schema__ = Version("4.0.0")
 
 def remove_temp_files(args: argparse.Namespace):
     if len(glob.glob(f"{args.files_prefix}*"))>0:
@@ -262,7 +264,16 @@ def create_resistance_db(args):
         extra_files["barcode"] = args.barcode
     if os.path.isfile("mask.bed"):
         extra_files["bedmask"] = "mask.bed"
-    pp.create_db(args,extra_files=extra_files)
+
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        if args.csv:
+            args.csv = reformat_variant_csv_file(args.csv,f'{tmpdir}.variants.csv')
+        if args.watchlist:
+            args.watchlist = reformat_variant_csv_file(args.watchlist,f'{tmpdir}.watchlist.csv')
+
+
+        pp.create_db(args,extra_files=extra_files)
 
 
 def cli_collate(args):
@@ -292,6 +303,7 @@ def cli_update_db(args):
 
     pp.logging.info('\nCreating species DB')
     os.chdir('species')
+    check_db_schema_version('species')
     pp.run_cmd("sourmash index sourmash.sbt.zip sketches/*")
     
     sylph_cmd = "--sylph_db ntm-sylph-db/db" if os.path.isfile('ntm-sylph-db/README.md') else ""
@@ -302,6 +314,12 @@ def cli_update_db(args):
     for d in dirs:
         logging.debug(f"Moving to {d}")
         os.chdir(d)
+        ignore = json.load(open('variables.json')).get('ntm-profiler-ignore',False)
+        check_db_schema_version('resistance')
+        if ignore:
+            logging.info(f'Skipping creation of resistance DB for {d} as it is marked to be ignored')
+            os.chdir('../')
+            continue
         species = json.load(open('variables.json'))['species']
         logging.info(f'\nCreating DB for {species}')
         barcode_arg = "--barcode barcode.bed" if os.path.isfile("barcode.bed") else ""
