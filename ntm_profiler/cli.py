@@ -303,6 +303,7 @@ def cli_update_db(args):
 
     pp.logging.info('\nCreating species DB')
     os.chdir('species')
+    check_db_schema_version('species')
     pp.run_cmd("sourmash index sourmash.sbt.zip sketches/*")
     
     sylph_cmd = "--sylph_db ntm-sylph-db/db" if os.path.isfile('ntm-sylph-db/README.md') else ""
@@ -314,6 +315,7 @@ def cli_update_db(args):
         logging.debug(f"Moving to {d}")
         os.chdir(d)
         ignore = json.load(open('variables.json')).get('ntm-profiler-ignore',False)
+        check_db_schema_version('resistance')
         if ignore:
             logging.info(f'Skipping creation of resistance DB for {d} as it is marked to be ignored')
             os.chdir('../')
