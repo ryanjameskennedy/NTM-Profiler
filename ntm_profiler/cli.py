@@ -78,7 +78,7 @@ contents of the error log (%s)
 
 def cli_profile(args):
 
-    # ntmp.check_for_databases(args)
+    ntmp.check_for_databases(args)
 
     pp.process_args(args)
 
